@@ -40,7 +40,6 @@
 
         const otherReader = new FileReader()
         otherReader.onload = async event => {
-          console.log('reading ', img)
           getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight)
         }
         otherReader.readAsArrayBuffer(file)
@@ -87,8 +86,6 @@
       }
     }
 
-    console.log('width: ', imageAsColorNames[0].length)
-
     uniqueColors = _.union(_.flatten(imageAsColorNames).map(ob => ob.name)).filter(c => c.toLowerCase() !== 'white')
 
     drawArt(imageAsColorNames)
@@ -107,7 +104,6 @@
 
     for (let row = 0; row < imageAsColorNames.length; row++) {
       for (let col = 0; col < imageAsColorNames[0].length; col++) {
-        // console.log('Drawing row: ', imageAsColorNames[row][col])
         context.fillStyle = imageAsColorNames[row][col].hex
         context.fillRect(col * squareSize, row * squareSize, squareSize, squareSize)
 
