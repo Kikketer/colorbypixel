@@ -89,7 +89,7 @@
 
     console.log('width: ', imageAsColorNames[0].length)
 
-    uniqueColors = _.union(_.flatten(imageAsColorNames).map(ob => ob.name))
+    uniqueColors = _.union(_.flatten(imageAsColorNames).map(ob => ob.name)).filter(c => c.toLowerCase() !== 'white')
 
     drawArt(imageAsColorNames)
     drawColorSheet(imageAsColorNames)
@@ -125,7 +125,7 @@
   }
 
   const drawColorSheet = imageAsColorNames => {
-    const squareSize = 18 // 75px at 300dpi = 1/4", 18 @ 72dpi
+    const squareSize = 24 // 75px at 300dpi = 1/4", 18 @ 72dpi, 24 @ 96dpi (canvas)
     let canvas = document.querySelector('#color-sheet')
     let context = canvas.getContext('2d')
     canvas.width = imageAsColorNames[0].length * squareSize
@@ -141,13 +141,15 @@
         context.strokeRect(col * squareSize, row * squareSize, squareSize, squareSize)
         context.font = '8px "Press Start 2P", sans-serif'
         context.fillStyle = '#dedede'
-        const label = uniqueColors.map(c => c.toLowerCase()).indexOf(imageAsColorNames[row][col].name.toLowerCase())
-        const textSize = context.measureText(label)
-        context.fillText(
-          label,
-          col * squareSize + squareSize / 2 - textSize.width / 2,
-          row * squareSize + squareSize / 2 + textSize.actualBoundingBoxAscent / 2
-        )
+        if (imageAsColorNames[row][col].name.toLowerCase() !== 'white') {
+          const label = uniqueColors.map(c => c.toLowerCase()).indexOf(imageAsColorNames[row][col].name.toLowerCase())
+          const textSize = context.measureText(label)
+          context.fillText(
+            label,
+            col * squareSize + squareSize / 2 - textSize.width / 2,
+            row * squareSize + squareSize / 2 + textSize.actualBoundingBoxAscent / 2
+          )
+        }
       }
     }
   }
