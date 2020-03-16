@@ -1,5 +1,9 @@
 <script>
+  import palettes, { getById } from './palletes'
+
   let className
+  let selectedPalette = 'classic'
+  let files = []
   export let uniqueColors
   export let error
   export let onImageSet
@@ -7,30 +11,32 @@
 
   const onPrint = () => window.print()
 
-  const onSetImage = event => {
-    const file = event.target.files[0]
+  const onSetImage = () => {
+    if (files.length) {
+      const file = files[0]
 
-    if (!file || !file.type.startsWith('image/')) {
-      error = 'Invalid File Format'
-      return
+      if (!file || !file.type.startsWith('image/')) {
+        error = 'Invalid File Format'
+        return
+      }
+
+      const img = document.createElement('img')
+      img.classList.add('obj')
+      img.file = file
+
+      const preview = document.querySelector('#preview')
+      preview.querySelectorAll('*').forEach(n => n.remove())
+      preview.appendChild(img)
+
+      onImageSet(img, file, selectedPalette)
     }
-
-    const img = document.createElement('img')
-    img.classList.add('obj')
-    img.file = file
-
-    const preview = document.querySelector('#preview')
-    preview.querySelectorAll('*').forEach(n => n.remove())
-    preview.appendChild(img)
-
-    onImageSet(img, file)
   }
 </script>
 
 <style>
   main {
     margin: auto;
-    max-width: 400px;
+    max-width: 450px;
     text-align: left;
   }
 
@@ -39,8 +45,22 @@
     opacity: 0;
   }
 
-  input {
+  .palette-block {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .buy-btn {
+    margin-left: 0.7rem;
+  }
+
+  input,
+  .palette-block {
     margin-bottom: 1rem;
+  }
+
+  select {
+    max-width: 400px;
   }
 </style>
 
@@ -52,7 +72,25 @@
       <span role="img" aria-label="print" alt="print" on:click={onPrint}>🖨</span>
     {/if}
   </div>
-  <input class="nes-input" type="file" id="image" name="image" accept="image/png, image/gif" on:change={onSetImage} />
+  <input
+    class="nes-input"
+    type="file"
+    id="image"
+    name="image"
+    accept="image/png, image/gif"
+    bind:files
+    on:change={onSetImage} />
+  <label for="palette">Palette:</label>
+  <div class="palette-block">
+    <select class="nes-input" id="palette" name="palette" bind:value={selectedPalette} on:change={onSetImage}>
+      {#each palettes as palette}
+        <option value={palette.id}>{palette.name}</option>
+      {/each}
+    </select>
+    {#if selectedPalette}
+      <a href={getById(selectedPalette).buy} target="_blank" class="nes-btn buy-btn">Buy</a>
+    {/if}
+  </div>
   {#if error}
     <p class="error">{error}</p>
   {/if}

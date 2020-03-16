@@ -17,7 +17,7 @@
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
   }
 
-  const onImageSet = async (img, file) => {
+  const onImageSet = async (img, file, palette) => {
     const reader = new FileReader()
     // reader.onload = iImg => event => (iImg.src = event.target.result)(img)
     reader.onload = event => {
@@ -27,7 +27,7 @@
 
         const otherReader = new FileReader()
         otherReader.onload = async event => {
-          getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight)
+          getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight, palette)
         }
         otherReader.readAsArrayBuffer(file)
       } catch (err) {
@@ -45,19 +45,19 @@
     }
   }
 
-  const readAndReturnColorName = (jimpImage, x, y) => {
+  const readAndReturnColorName = (jimpImage, x, y, palette) => {
     const colorHex = jimpImage.getPixelColor(x, y)
 
     const rgba = Jimp.intToRGBA(colorHex)
     if (rgba.a < 255) {
-      return ntc.names.find(nameObj => nameObj[1] === 'White')
+      return ntc.name('#ffffff', palette)
     }
 
     const cssHex = rgbToHex(rgba.r, rgba.g, rgba.b)
-    return ntc.name(cssHex)
+    return ntc.name(cssHex, palette)
   }
 
-  const getImageAsColorNames = async (buffer, width, height) => {
+  const getImageAsColorNames = async (buffer, width, height, palette) => {
     // const preview = document.querySelector('#preview')
     const jimpImage = await Jimp.read(buffer)
 
@@ -69,7 +69,7 @@
       }
 
       for (let column = 0; column < width; column++) {
-        imageAsColorNames[row].push(readAndReturnColorName(jimpImage, column, row))
+        imageAsColorNames[row].push(readAndReturnColorName(jimpImage, column, row, palette))
       }
     }
 
