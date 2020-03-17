@@ -1,5 +1,6 @@
 import classic from './classic'
 import classicNES from './classic-NES'
+import greyscale from './greyscale'
 
 const palettes = [
   {
@@ -17,6 +18,12 @@ const palettes = [
     colors: classicNES,
     buy:
       'https://www.amazon.com/Crayola-Markers-Classroom-Educational-All-Purpose/dp/B0002T3WLS/ref=sr_1_7?keywords=crayola+classic+markers&qid=1584398315&sr=8-7&swrs=5C67007123F0D2E375C3AE19D9EB3344'
+  },
+  {
+    id: 'greyscale',
+    name: 'Greyscale',
+    description: 'Greyscale',
+    colors: greyscale
   }
 ]
 

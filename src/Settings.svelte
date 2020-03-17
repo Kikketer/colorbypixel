@@ -60,7 +60,7 @@
   }
 
   select {
-    max-width: 400px;
+    height: 44px;
   }
 </style>
 
@@ -87,7 +87,7 @@
         <option value={palette.id}>{palette.name}</option>
       {/each}
     </select>
-    {#if selectedPalette}
+    {#if selectedPalette && getById(selectedPalette).buy}
       <a href={getById(selectedPalette).buy} target="_blank" class="nes-btn buy-btn">Buy</a>
     {/if}
   </div>
