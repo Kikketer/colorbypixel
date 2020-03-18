@@ -205,7 +205,7 @@
 </style>
 
 <main>
-  <h1 class="print-hide">Color By Pixel</h1>
+  <h1 class="print-hide">32 Colors</h1>
   <Settings class="print-hide" {uniqueColors} {error} {onImageSet} />
   <canvas id="art" class="print-hide" />
   <br />

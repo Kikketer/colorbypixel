@@ -18,7 +18,7 @@
 
 <main>
   <div class="footer">
-    <p>Generator by: Chris Weed</p>
+    <p>Have fun!</p>
     <p>Lots of legal garbage, mostly "anything you do here is on you, I just made the tool"</p>
   </div>
 </main>
