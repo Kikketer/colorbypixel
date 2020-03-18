@@ -166,12 +166,13 @@
 
   h1 {
     text-transform: uppercase;
-    font-size: 3em;
+    font-size: 2rem;
   }
 
   canvas {
     border: 1px solid grey;
     margin: auto;
+    max-width: 100%;
   }
 
   table {
