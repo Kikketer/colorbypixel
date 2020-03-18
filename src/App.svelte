@@ -3,6 +3,7 @@
   import _ from 'lodash'
   import ntc from './ntc'
   import Footer from './Footer.svelte'
+  import Settings from './Settings.svelte'
 
   let uniqueColors = []
   let error = ''
@@ -16,21 +17,7 @@
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
   }
 
-  const setImage = async event => {
-    const file = event.target.files[0]
-
-    if (!file.type.startsWith('image/')) {
-      return
-    }
-
-    const img = document.createElement('img') //document.querySelector('#preview')
-    img.classList.add('obj')
-    img.file = file
-
-    const preview = document.querySelector('#preview')
-    preview.querySelectorAll('*').forEach(n => n.remove())
-    preview.appendChild(img)
-
+  const onImageSet = async (img, file, palette) => {
     const reader = new FileReader()
     // reader.onload = iImg => event => (iImg.src = event.target.result)(img)
     reader.onload = event => {
@@ -40,7 +27,7 @@
 
         const otherReader = new FileReader()
         otherReader.onload = async event => {
-          getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight)
+          getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight, palette)
         }
         otherReader.readAsArrayBuffer(file)
       } catch (err) {
@@ -58,19 +45,19 @@
     }
   }
 
-  const readAndReturnColorName = (jimpImage, x, y) => {
+  const readAndReturnColorName = (jimpImage, x, y, palette) => {
     const colorHex = jimpImage.getPixelColor(x, y)
 
     const rgba = Jimp.intToRGBA(colorHex)
     if (rgba.a < 255) {
-      return ntc.names.find(nameObj => nameObj[1] === 'White')
+      return ntc.name('#ffffff', palette)
     }
 
     const cssHex = rgbToHex(rgba.r, rgba.g, rgba.b)
-    return ntc.name(cssHex)
+    return ntc.name(cssHex, palette)
   }
 
-  const getImageAsColorNames = async (buffer, width, height) => {
+  const getImageAsColorNames = async (buffer, width, height, palette) => {
     // const preview = document.querySelector('#preview')
     const jimpImage = await Jimp.read(buffer)
 
@@ -82,7 +69,7 @@
       }
 
       for (let column = 0; column < width; column++) {
-        imageAsColorNames[row].push(readAndReturnColorName(jimpImage, column, row))
+        imageAsColorNames[row].push(readAndReturnColorName(jimpImage, column, row, palette))
       }
     }
 
@@ -179,12 +166,13 @@
 
   h1 {
     text-transform: uppercase;
-    font-size: 3em;
+    font-size: 2rem;
   }
 
   canvas {
     border: 1px solid grey;
     margin: auto;
+    max-width: 100%;
   }
 
   table {
@@ -193,29 +181,11 @@
     text-align: left;
   }
 
-  input {
-    margin-bottom: 1rem;
-  }
-
-  .preview {
-    position: absolute;
-    opacity: 0;
-  }
-
-  .settings {
-    margin: auto;
-    max-width: 400px;
-    text-align: left;
-  }
-
   .spacer {
     flex: 1;
   }
 
   @media print {
-    .print-hide {
-      display: none;
-    }
     #color-sheet {
       display: block;
     }
@@ -235,20 +205,8 @@
 </style>
 
 <main>
-  <h1 class="print-hide">Color By Pixel</h1>
-  <div class="print-hide settings">
-    <div class="preview" id="preview" />
-    <div style="display: flex; flex-direction: row; justify-content: space-between">
-      <label for="image">Upload Image:</label>
-      {#if uniqueColors.length}
-        <span role="img" aria-label="print" alt="print" on:click={onPrint}>🖨</span>
-      {/if}
-    </div>
-    <input class="nes-input" type="file" id="image" name="image" accept="image/png, image/gif" on:change={setImage} />
-    {#if error}
-      <p class="error">{error}</p>
-    {/if}
-  </div>
+  <h1 class="print-hide">32 Colors</h1>
+  <Settings class="print-hide" {uniqueColors} {error} {onImageSet} />
   <canvas id="art" class="print-hide" />
   <br />
   <canvas id="color-sheet" />

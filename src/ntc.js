@@ -30,30 +30,34 @@ Sample Usage:
 
 */
 
-import classic from './palletes/classic'
+import { getById } from './palletes'
 import _ from 'lodash'
 
 var ndf1 = 0
 var ndf2 = 0
 var ndf = 0
 var lookup = {}
+
 const ntc = {
-  init: function() {
+  initializePalette: palette => {
     var color, rgb, hsl
-    for (var i = 0; i < ntc.names.length; i++) {
-      color = '#' + ntc.names[i][0]
+    const names = getById(palette)
+    for (var i = 0; i < names.colors.length; i++) {
+      color = '#' + names.colors[i][0]
       rgb = ntc.rgb(color)
       hsl = ntc.hsl(color)
-      lookup[ntc.names[i][1]] = parseInt(ntc.names[i][0], 16)
-      ntc.names[i].push(rgb[0], rgb[1], rgb[2], hsl[0], hsl[1], hsl[2])
+      lookup[names.colors[i][1]] = parseInt(names.colors[i][0], 16)
+      names.colors[i].push(rgb[0], rgb[1], rgb[2], hsl[0], hsl[1], hsl[2])
     }
+    return names
   },
 
   value: function(name) {
     return lookup[name]
   },
 
-  name: function(color) {
+  name: function(color, palette = 'classic') {
+    const names = ntc.initializePalette(palette)
     color = color.toUpperCase()
     if (color.length < 3 || color.length > 7) return ['#000000', 'Invalid Color: ' + color, false]
     if (color.length % 3 == 0) color = '#' + color
@@ -78,14 +82,18 @@ const ntc = {
     var cl = -1,
       df = -1
 
-    for (var i = 0; i < ntc.names.length; i++) {
-      if (color == '#' + ntc.names[i][0]) {
-        const resultingColor = ntc.names.find(nameObj => nameObj[1].toLowerCase() === ntc.names[i][1].toLowerCase())
+    for (var i = 0; i < names.colors.length; i++) {
+      if (color == '#' + names.colors[i][0]) {
+        const resultingColor = names.colors.find(
+          nameObj => nameObj[1].toLowerCase() === names.colors[i][1].toLowerCase()
+        )
         return { hex: '#' + resultingColor[0], name: resultingColor[1], exact: true, original: color }
       }
 
-      ndf1 = Math.pow(r - ntc.names[i][2], 2) + Math.pow(g - ntc.names[i][3], 2) + Math.pow(b - ntc.names[i][4], 2)
-      ndf2 = Math.pow(h - ntc.names[i][5], 2) + Math.pow(s - ntc.names[i][6], 2) + Math.pow(l - ntc.names[i][7], 2)
+      ndf1 =
+        Math.pow(r - names.colors[i][2], 2) + Math.pow(g - names.colors[i][3], 2) + Math.pow(b - names.colors[i][4], 2)
+      ndf2 =
+        Math.pow(h - names.colors[i][5], 2) + Math.pow(s - names.colors[i][6], 2) + Math.pow(l - names.colors[i][7], 2)
       ndf = ndf1 + ndf2 * 2
       if (df < 0 || df > ndf) {
         df = ndf
@@ -94,7 +102,7 @@ const ntc = {
     }
 
     // Pick the first hex for any matched colors (you can have multiple with the same name, like White)
-    const resultingColor = ntc.names.find(nameObj => nameObj[1].toLowerCase() === ntc.names[cl][1].toLowerCase())
+    const resultingColor = names.colors.find(nameObj => nameObj[1].toLowerCase() === names.colors[cl][1].toLowerCase())
 
     return cl < 0
       ? { hex: '#000000', name: 'Invalid Color: ' + color, exact: false, original: color }
@@ -142,7 +150,7 @@ const ntc = {
     ]
   },
 
-  names: classic,
+  // names: palettes[palette].colors,
   LightenDarkenColor: (col, amt) => {
     var usePound = false
     if (col[0] === '#') {
@@ -171,6 +179,6 @@ const ntc = {
   }
 }
 
-ntc.init()
+// ntc.init()
 
 export default ntc
