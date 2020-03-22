@@ -31,7 +31,6 @@ Sample Usage:
 */
 
 import { getById } from './palletes'
-import _ from 'lodash'
 
 var ndf1 = 0
 var ndf2 = 0

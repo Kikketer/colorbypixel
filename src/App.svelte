@@ -58,7 +58,6 @@
   }
 
   const getImageAsColorNames = async (buffer, width, height, palette) => {
-    // const preview = document.querySelector('#preview')
     const jimpImage = await Jimp.read(buffer)
 
     const imageAsColorNames = []
@@ -73,7 +72,11 @@
       }
     }
 
-    uniqueColors = _.union(_.flatten(imageAsColorNames).map(ob => ob.name)).filter(c => c.toLowerCase() !== 'white')
+    const flattenedColors = _.flatten(imageAsColorNames)
+    const mappedColors = flattenedColors.map(ob => ({ name: ob.name, hex: ob.hex }))
+    const filteredColors = mappedColors.filter(c => c.name.toLowerCase() !== 'white')
+    const unionedColors = _.unionBy(filteredColors, 'name')
+    uniqueColors = unionedColors
 
     drawArt(imageAsColorNames)
     drawColorSheet(imageAsColorNames)
@@ -96,7 +99,9 @@
 
         context.font = '8px "Press Start 2P", sans-serif'
         context.fillStyle = '#ffffff' //ntc.LightenDarkenColor('#dedede', -10)
-        const label = uniqueColors.map(c => c.toLowerCase()).indexOf(imageAsColorNames[row][col].name.toLowerCase())
+        const label = uniqueColors
+          .map(c => c.name.toLowerCase())
+          .indexOf(imageAsColorNames[row][col].name.toLowerCase())
         const textSize = context.measureText(label)
         context.fillText(
           label,
@@ -125,7 +130,9 @@
         context.font = '8px "Press Start 2P", sans-serif'
         context.fillStyle = '#dedede'
         if (imageAsColorNames[row][col].name.toLowerCase() !== 'white') {
-          const label = uniqueColors.map(c => c.toLowerCase()).indexOf(imageAsColorNames[row][col].name.toLowerCase())
+          const label = uniqueColors
+            .map(c => c.name.toLowerCase())
+            .indexOf(imageAsColorNames[row][col].name.toLowerCase())
           const textSize = context.measureText(label)
           context.fillText(
             label,
@@ -185,6 +192,13 @@
     flex: 1;
   }
 
+  .color-block {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #d3d3d3;
+    display: inline-block;
+  }
+
   @media print {
     #color-sheet {
       display: block;
@@ -214,7 +228,11 @@
     <tbody>
       {#each uniqueColors as uniqueColor, index}
         <tr>
-          <td>{index}: {uniqueColor}</td>
+          <td>
+            {index}:
+            <span class="color-block" style={`background: ${uniqueColor.hex}`} />
+            {uniqueColor.name}
+          </td>
         </tr>
       {/each}
     </tbody>
