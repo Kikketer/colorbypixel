@@ -1,6 +1,7 @@
 import classic from './classic'
 import classicNES from './classic-NES'
 import greyscale from './greyscale'
+import allColors from './all-the-colors'
 
 const palettes = [
   {
@@ -24,6 +25,12 @@ const palettes = [
     name: 'Greyscale',
     description: 'Greyscale',
     colors: greyscale
+  },
+  {
+    id: 'all',
+    name: 'All Colors',
+    description: 'A mountain of colors!',
+    colors: allColors
   }
 ]
 
