@@ -197,6 +197,9 @@
     height: 1rem;
     border: 1px solid #d3d3d3;
     display: inline-block;
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   @media print {
