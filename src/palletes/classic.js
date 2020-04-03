@@ -30,6 +30,7 @@ export default [
   ['d17241', 'Tiger Orange'],
   ['FF7538', 'Orange'],
   ['EE204D', 'Red'],
+  ['f83800', 'Red'],
   ['CA3767', 'Raspberry'],
   ['a70000', 'Raspberry'],
   ['F78FA7', 'Flamingo Pink'],
