@@ -43,5 +43,6 @@ export default [
   ['926EAE', 'Purple'],
   ['FCE883', 'Yellow'],
   ['fff300', 'Yellow'],
+  ['fcfefc', 'White'],
   ['FFFFFF', 'White']
 ]
