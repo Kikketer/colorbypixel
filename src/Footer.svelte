@@ -1,3 +1,10 @@
+<footer>
+  <div class="footer">
+    <p>Have fun!</p>
+    <p>Lots of legal garbage, mostly "anything you do here is on you, I just made the tool"</p>
+  </div>
+</footer>
+
 <style>
   .footer {
     margin-top: 2rem;
@@ -15,10 +22,3 @@
     }
   }
 </style>
-
-<main>
-  <div class="footer">
-    <p>Have fun!</p>
-    <p>Lots of legal garbage, mostly "anything you do here is on you, I just made the tool"</p>
-  </div>
-</main>

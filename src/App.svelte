@@ -1,88 +1,85 @@
 <script>
-  import Jimp from 'jimp/browser/lib/jimp'
-  import _ from 'lodash'
-  import ntc from './ntc'
   import Footer from './Footer.svelte'
   import Settings from './Settings.svelte'
+  import Examples from './Examples.svelte'
+  import { getImageAsColorNames } from './utils'
 
   let uniqueColors = []
   let error = ''
+  let loading = false
+  let selectedPalette = 'classic'
 
-  const componentToHex = c => {
-    var hex = c.toString(16)
-    return hex.length === 1 ? '0' + hex : hex
+  const onSelectPalette = (palette) => {
+    selectedPalette = palette
   }
 
-  const rgbToHex = (r, g, b) => {
-    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+  const onSetImage = async (imageFile) => {
+    loading = true
+    try {
+      const img = await validateImage(imageFile)
+      onImageSet(img, imageFile, selectedPalette)
+    } catch (err) {
+      error = err?.message
+    }
+    loading = false
   }
 
-  const onImageSet = async (img, file, palette) => {
-    const reader = new FileReader()
-    // reader.onload = iImg => event => (iImg.src = event.target.result)(img)
-    reader.onload = event => {
-      img.src = event.target.result
-      try {
-        onPreviewLoaded(img)
+  const validateImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith('image/')) {
+        return reject('Invalid File Format')
+      }
 
-        const otherReader = new FileReader()
-        otherReader.onload = async event => {
-          getImageAsColorNames(event.target.result, img.offsetWidth, img.offsetHeight, palette)
+      const img = document.querySelector('#preview')
+
+      // Read the file to place it on the page
+      const reader = new FileReader()
+      reader.onload = ({ target }) => {
+        img.onload = () => {
+          if (img.offsetWidth <= 0) {
+            return
+          }
+
+          if (img.offsetWidth > 32 || img.offsetHeight > 90) {
+            return reject('Image is too large, try 32x32')
+          }
+
+          return resolve(img)
         }
-        otherReader.readAsArrayBuffer(file)
-      } catch (err) {
-        console.error(err)
-        error = 'Something went wrong'
+
+        img.src = target.result
       }
-    }
-    reader.readAsDataURL(file)
+      reader.readAsDataURL(file)
+    })
   }
 
-  const onPreviewLoaded = async previewImage => {
-    // Check the size and throw an error if needed
-    if (previewImage.offsetWidth > 32 || previewImage.offsetHeight > 36) {
-      throw new Error(`Image is too big: ${previewImage.offsetWidth}x${previewImage.offsetHeight}`)
-    }
-  }
-
-  const readAndReturnColorName = (jimpImage, x, y, palette) => {
-    const colorHex = jimpImage.getPixelColor(x, y)
-
-    const rgba = Jimp.intToRGBA(colorHex)
-    if (rgba.a < 255) {
-      return ntc.name('#ffffff', palette)
+  const onImageSet = async (img, file) => {
+    const doIt = async (buffer) => {
+      const result = await getImageAsColorNames(buffer, img.offsetWidth, img.offsetHeight, selectedPalette)
+      uniqueColors = result.unionedColors
+      drawArt(result.imageAsColorNames)
+      drawColorSheet(result.imageAsColorNames)
     }
 
-    const cssHex = rgbToHex(rgba.r, rgba.g, rgba.b)
-    return ntc.name(cssHex, palette)
-  }
-
-  const getImageAsColorNames = async (buffer, width, height, palette) => {
-    const jimpImage = await Jimp.read(buffer)
-
-    const imageAsColorNames = []
-
-    for (let row = 0; row < height; row++) {
-      if (!imageAsColorNames[row]) {
-        imageAsColorNames[row] = []
+    if (typeof file === 'string') {
+      const binary_string = window.atob(file)
+      const len = binary_string.length
+      const bytes = new Uint8Array(len)
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i)
       }
 
-      for (let column = 0; column < width; column++) {
-        imageAsColorNames[row].push(readAndReturnColorName(jimpImage, column, row, palette))
+      doIt(bytes.buffer)
+    } else {
+      const reader = new FileReader()
+      reader.onload = async (event) => {
+        doIt(event.target.result)
       }
+      reader.readAsArrayBuffer(file)
     }
-
-    const flattenedColors = _.flatten(imageAsColorNames)
-    const mappedColors = flattenedColors.map(ob => ({ name: ob.name, hex: ob.hex }))
-    const filteredColors = mappedColors.filter(c => c.name.toLowerCase() !== 'white')
-    const unionedColors = _.unionBy(filteredColors, 'name')
-    uniqueColors = unionedColors
-
-    drawArt(imageAsColorNames)
-    drawColorSheet(imageAsColorNames)
   }
 
-  const drawArt = imageAsColorNames => {
+  const drawArt = (imageAsColorNames) => {
     const squareSize = 18 // 75px at 300dpi = 1/4", 18 @ 72dpi
     let canvas = document.querySelector('#art')
     let context = canvas.getContext('2d')
@@ -100,7 +97,7 @@
         context.font = '8px "Press Start 2P", sans-serif'
         context.fillStyle = '#ffffff' //ntc.LightenDarkenColor('#dedede', -10)
         const label = uniqueColors
-          .map(c => c.name.toLowerCase())
+          .map((c) => c.name.toLowerCase())
           .indexOf(imageAsColorNames[row][col].name.toLowerCase())
         const textSize = context.measureText(label)
         context.fillText(
@@ -112,7 +109,7 @@
     }
   }
 
-  const drawColorSheet = imageAsColorNames => {
+  const drawColorSheet = (imageAsColorNames) => {
     const squareSize = 24 // 75px at 300dpi = 1/4", 18 @ 72dpi, 24 @ 96dpi (canvas)
     let canvas = document.querySelector('#color-sheet')
     let context = canvas.getContext('2d')
@@ -131,7 +128,7 @@
         context.fillStyle = '#dedede'
         if (imageAsColorNames[row][col].name.toLowerCase() !== 'white') {
           const label = uniqueColors
-            .map(c => c.name.toLowerCase())
+            .map((c) => c.name.toLowerCase())
             .indexOf(imageAsColorNames[row][col].name.toLowerCase())
           const textSize = context.measureText(label)
           context.fillText(
@@ -144,23 +141,45 @@
     }
   }
 
-  const onPrint = () => {
-    window.print()
-  }
-
-  function setDPI(canvas, dpi) {
-    // Set up CSS size.
-    canvas.style.width = canvas.style.width || canvas.width + 'px'
-    canvas.style.height = canvas.style.height || canvas.height + 'px'
-
-    // Resize canvas and scale future draws.
-    var scaleFactor = dpi / 96
-    canvas.width = Math.ceil(canvas.width * scaleFactor)
-    canvas.height = Math.ceil(canvas.height * scaleFactor)
-    var ctx = canvas.getContext('2d')
-    ctx.scale(scaleFactor, scaleFactor)
-  }
+  // function setDPI(canvas, dpi) {
+  //   // Set up CSS size.
+  //   canvas.style.width = canvas.style.width || canvas.width + 'px'
+  //   canvas.style.height = canvas.style.height || canvas.height + 'px'
+  //
+  //   // Resize canvas and scale future draws.
+  //   var scaleFactor = dpi / 96
+  //   canvas.width = Math.ceil(canvas.width * scaleFactor)
+  //   canvas.height = Math.ceil(canvas.height * scaleFactor)
+  //   var ctx = canvas.getContext('2d')
+  //   ctx.scale(scaleFactor, scaleFactor)
+  // }
 </script>
+
+<main>
+  <h1 class="print-hide">16 Colors</h1>
+  <Settings class="print-hide" {uniqueColors} {error} {onSetImage} {onSelectPalette} />
+  <canvas id="art" class="print-hide" />
+  <br />
+  <canvas id="color-sheet" />
+  <table>
+    <tbody>
+      {#each uniqueColors as uniqueColor, index}
+        <tr>
+          <td>
+            {index}:
+            <span class="color-block" style={`background: ${uniqueColor.hex}`} />
+            {uniqueColor.name}
+          </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+
+  <Examples {onImageSet} />
+
+  <div class="spacer" />
+  <Footer />
+</main>
 
 <style>
   main {
@@ -220,27 +239,3 @@
     }
   }
 </style>
-
-<main>
-  <h1 class="print-hide">32 Colors</h1>
-  <Settings class="print-hide" {uniqueColors} {error} {onImageSet} />
-  <canvas id="art" class="print-hide" />
-  <br />
-  <canvas id="color-sheet" />
-  <table>
-    <tbody>
-      {#each uniqueColors as uniqueColor, index}
-        <tr>
-          <td>
-            {index}:
-            <span class="color-block" style={`background: ${uniqueColor.hex}`} />
-            {uniqueColor.name}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-
-  <div class="spacer" />
-  <Footer />
-</main>
