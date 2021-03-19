@@ -17,7 +17,7 @@
     loading = true
     try {
       const img = await validateImage(imageFile)
-      onImageSet(img, imageFile, selectedPalette)
+      await onImageSet(img, imageFile, selectedPalette)
     } catch (err) {
       error = err?.message
     }
@@ -69,7 +69,7 @@
         bytes[i] = binary_string.charCodeAt(i)
       }
 
-      doIt(bytes.buffer)
+      await doIt(bytes.buffer)
     } else {
       const reader = new FileReader()
       reader.onload = async (event) => {
@@ -158,6 +158,7 @@
 <main>
   <h1 class="print-hide">16 Colors</h1>
   <Settings class="print-hide" {uniqueColors} {error} {onSetImage} {onSelectPalette} />
+  {#if loading}<p>loading...</p>{/if}
   <canvas id="art" class="print-hide" />
   <br />
   <canvas id="color-sheet" />
