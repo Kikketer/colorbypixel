@@ -5,7 +5,7 @@
 
   const loadExample = (event) => {
     const base64Image = getImageAsBase64(event.target)
-    onImageSet(event.target, base64Image)
+    onImageSet(event.target, base64Image, event.target.alt)
   }
 
   const getImageAsBase64 = (img) => {
@@ -28,15 +28,19 @@
   }
 </script>
 
-<main class={`${className || ''} print-hide`}>
+<main class={`${className || ''} print-hide examples`}>
   <p>Examples:</p>
   <div class="example-table">
-    <img src="./examples/YoshiCart.png" alt="Yoshi Cart" data-name="YoshiCart" on:click={loadExample} />
-    <img src="./examples/Mario3.png" alt="Mario 3" data-name="Mario3" on:click={loadExample} />
+    <img src="./16-Colors-Logo.png" alt="16 Colors Logo" on:click={loadExample} on:load={loadExample} />
+    <img src="./examples/YoshiCart.png" alt="Yoshi Cart" on:click={loadExample} />
+    <img src="./examples/Mario3.png" alt="Mario 3" on:click={loadExample} />
   </div>
 </main>
 
 <style>
+  .examples {
+    margin-bottom: 10px;
+  }
   .example-table {
     overflow-y: scroll;
   }

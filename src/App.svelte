@@ -11,6 +11,7 @@
   let selectedPalette = 'classic'
   let currentImage
   let currentFile
+  let currentName = ''
 
   const onSelectPalette = (palette) => {
     selectedPalette = palette
@@ -22,13 +23,19 @@
 
   const onSetImage = async (imageFile) => {
     try {
+      error = ''
       imageFile = imageFile || currentFile
+
+      const potentialName = imageFile.name.match(/(.*)\.png$/)
+      if (potentialName && potentialName.length > 0) {
+        currentName = potentialName[1]
+      }
 
       currentImage = await validateImage(imageFile)
       currentFile = imageFile
       await onImageSet(currentImage, currentFile, selectedPalette)
     } catch (err) {
-      error = err?.message
+      error = err?.message || err
     }
   }
 
@@ -36,6 +43,11 @@
     return new Promise((resolve, reject) => {
       if (!file || !file.type.startsWith('image/')) {
         return reject('Invalid File Format')
+      }
+
+      // If it's just too large (many colors?) it'll be too slow
+      if (file.size > 3000) {
+        return reject('File is too large')
       }
 
       const img = document.querySelector('#preview')
@@ -49,7 +61,7 @@
           }
 
           if (img.offsetWidth > 32 || img.offsetHeight > 90) {
-            return reject('Image is too large, try 32x32')
+            return reject('Too large, try 32x32 pixels')
           }
 
           return resolve(img)
@@ -62,6 +74,7 @@
   }
 
   const onImageSet = async (img, file) => {
+    error = ''
     loading = true
 
     currentImage = img || currentImage
@@ -177,28 +190,31 @@
 
 <main>
   <h1 class="print-hide">16 Colors</h1>
-  <Settings class="print-hide" {uniqueColors} {error} {onSetImage} {onSelectPalette} />
-  <div class="render-block">
-    {#if loading}<p class="loading" transition:fade={{ duration: 200 }}>loading...</p>{/if}
-    <canvas id="art" class="print-hide" />
-    <br />
-    <canvas id="color-sheet" />
-  </div>
-  <table>
-    <tbody>
-      {#each uniqueColors as uniqueColor, index}
-        <tr>
-          <td>
-            {index}:
-            <span class="color-block" style={`background: ${uniqueColor.hex}`} />
-            {uniqueColor.name}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-
   <Examples {onImageSet} />
+  <Settings class="print-hide" {uniqueColors} {error} {onSetImage} {onSelectPalette} />
+  {#if !error}
+    <div class="render-block">
+      {#if loading}<p class="loading" transition:fade={{ duration: 200 }}>loading...</p>{/if}
+
+      <canvas id="art" class="print-hide" />
+      <br />
+      <h1 id="name">{currentName}</h1>
+      <canvas id="color-sheet" />
+    </div>
+    <table>
+      <tbody>
+        {#each uniqueColors as uniqueColor, index}
+          <tr>
+            <td>
+              {index}:
+              <span class="color-block" style={`background: ${uniqueColor.hex}`} />
+              {uniqueColor.name}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
 
   <div class="spacer" />
   <Footer />
@@ -216,6 +232,10 @@
   h1 {
     text-transform: uppercase;
     font-size: 2rem;
+  }
+
+  h1#name {
+    font-size: 1rem;
   }
 
   canvas {
@@ -255,16 +275,19 @@
     width: 100%;
     background: rgba(255, 255, 255, 0.9);
     padding: 1rem 0;
+    box-shadow: 0 3px 6px rgba(26, 35, 126, 0.16), 0 3px 6px rgba(26, 35, 126, 0.23);
   }
 
   @media print {
-    #color-sheet {
+    #color-sheet,
+    #name {
       display: block;
     }
   }
 
   @media screen {
-    #color-sheet {
+    #color-sheet,
+    #name {
       display: none;
     }
   }

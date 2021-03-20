@@ -27,9 +27,6 @@
   <img alt="preview" class="preview" id="preview" />
   <div style="display: flex; flex-direction: row; justify-content: space-between">
     <label for="image">Upload Image:</label>
-    {#if uniqueColors.length}
-      <span role="img" aria-label="print" on:click={onPrint}>🖨</span>
-    {/if}
   </div>
   <input
     class="nes-input"
@@ -59,7 +56,12 @@
     {/if}
   </div>
   {#if error}
-    <p class="error">{error}</p>
+    <p class="error print-hide">{error}</p>
+  {:else}
+    <p class="instructions print-hide">
+      Print this page!
+      <span role="img" aria-label="print" on:click={onPrint}>🖨</span>
+    </p>
   {/if}
 </main>
 
@@ -91,5 +93,14 @@
 
   select {
     height: 44px;
+  }
+
+  .instructions {
+    text-align: center;
+  }
+
+  .error {
+    color: red;
+    text-align: center;
   }
 </style>

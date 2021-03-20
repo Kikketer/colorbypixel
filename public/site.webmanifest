@@ -1,0 +1,12 @@
+{
+  "short_name": "16 Colors",
+  "name": "16 Colors",
+  "icons": [{
+    "src": "16-Colors-Logo-Large.png",
+    "type": "image/png",
+    "sizes": "192x192"
+  }],
+  "start_url": "/",
+  "background_color": "#fafafa",
+  "theme_color": "#fafafa"
+}
