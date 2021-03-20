@@ -5,5 +5,5 @@ export default [
   ['e75a11', 'Tiger Orange'],
   ['9c4a00', 'Brown'],
   ['75ffa5', 'Green'],
-  ['75ffd1', 'Turquoise']
+  ['75ffd1', 'Turquoise'],
 ]
