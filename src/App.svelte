@@ -3,25 +3,33 @@
   import Settings from './Settings.svelte'
   import Examples from './Examples.svelte'
   import { getImageAsColorNames } from './utils'
+  import { fade } from 'svelte/transition'
 
   let uniqueColors = []
   let error = ''
   let loading = false
   let selectedPalette = 'classic'
+  let currentImage
+  let currentFile
 
   const onSelectPalette = (palette) => {
     selectedPalette = palette
+    if (currentImage) {
+      // Reload the image
+      onImageSet(currentImage, currentFile)
+    }
   }
 
   const onSetImage = async (imageFile) => {
-    loading = true
     try {
-      const img = await validateImage(imageFile)
-      await onImageSet(img, imageFile, selectedPalette)
+      imageFile = imageFile || currentFile
+
+      currentImage = await validateImage(imageFile)
+      currentFile = imageFile
+      await onImageSet(currentImage, currentFile, selectedPalette)
     } catch (err) {
       error = err?.message
     }
-    loading = false
   }
 
   const validateImage = async (file) => {
@@ -54,15 +62,27 @@
   }
 
   const onImageSet = async (img, file) => {
+    loading = true
+
+    currentImage = img || currentImage
+    currentFile = file || currentFile
+
     const doIt = async (buffer) => {
-      const result = await getImageAsColorNames(buffer, img.offsetWidth, img.offsetHeight, selectedPalette)
+      const result = await getImageAsColorNames(
+        buffer,
+        currentImage.offsetWidth,
+        currentImage.offsetHeight,
+        selectedPalette
+      )
       uniqueColors = result.unionedColors
       drawArt(result.imageAsColorNames)
       drawColorSheet(result.imageAsColorNames)
+      loading = false
     }
 
-    if (typeof file === 'string') {
-      const binary_string = window.atob(file)
+    // Converts a base64 string of a file into an array buffer
+    if (typeof currentFile === 'string') {
+      const binary_string = window.atob(currentFile)
       const len = binary_string.length
       const bytes = new Uint8Array(len)
       for (let i = 0; i < len; i++) {
@@ -75,7 +95,7 @@
       reader.onload = async (event) => {
         doIt(event.target.result)
       }
-      reader.readAsArrayBuffer(file)
+      reader.readAsArrayBuffer(currentFile)
     }
   }
 
@@ -158,10 +178,12 @@
 <main>
   <h1 class="print-hide">16 Colors</h1>
   <Settings class="print-hide" {uniqueColors} {error} {onSetImage} {onSelectPalette} />
-  {#if loading}<p>loading...</p>{/if}
-  <canvas id="art" class="print-hide" />
-  <br />
-  <canvas id="color-sheet" />
+  <div class="render-block">
+    {#if loading}<p class="loading" transition:fade={{ duration: 200 }}>loading...</p>{/if}
+    <canvas id="art" class="print-hide" />
+    <br />
+    <canvas id="color-sheet" />
+  </div>
   <table>
     <tbody>
       {#each uniqueColors as uniqueColor, index}
@@ -208,6 +230,10 @@
     text-align: left;
   }
 
+  .render-block {
+    position: relative;
+  }
+
   .spacer {
     flex: 1;
   }
@@ -220,6 +246,15 @@
     color-adjust: exact;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .loading {
+    position: absolute;
+    top: 1rem;
+    text-align: center;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem 0;
   }
 
   @media print {

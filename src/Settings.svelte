@@ -20,12 +20,11 @@
 
   const selectPalette = () => {
     onSelectPalette(selectedPalette)
-    setImage()
   }
 </script>
 
 <main class={className}>
-  <img class="preview" id="preview" />
+  <img alt="preview" class="preview" id="preview" />
   <div style="display: flex; flex-direction: row; justify-content: space-between">
     <label for="image">Upload Image:</label>
     {#if uniqueColors.length}
