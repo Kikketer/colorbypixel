@@ -26,7 +26,7 @@
 <main class={className}>
   <img alt="preview" class="preview" id="preview" />
   <div style="display: flex; flex-direction: row; justify-content: space-between">
-    <label for="image">Upload Image:</label>
+    <label for="image">Upload 32x32 PNG:</label>
   </div>
   <input
     class="nes-input"
