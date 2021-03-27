@@ -39,4 +39,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
         publish_branch: site
-        cname: 16colors.com
+        cname: www.16colors.com
