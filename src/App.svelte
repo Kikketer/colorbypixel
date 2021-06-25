@@ -60,8 +60,8 @@
             return
           }
 
-          if (img.offsetWidth > 32 || img.offsetHeight > 90) {
-            return reject('Too large, try 32x32 pixels')
+          if (img.offsetWidth > 48 || img.offsetHeight > 90) {
+            return reject('Too large, try 48x48 pixels')
           }
 
           return resolve(img)
